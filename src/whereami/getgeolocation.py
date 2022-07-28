@@ -103,71 +103,22 @@ def get_config_file() -> Path:
     return config_file
 
 
-def get_api_key() -> str:
-    """
-    Get the current api key
-
-    Returns: str
-        Current api key
-    """
-    config_file = get_config_file()
-
-    with open(config_file, "r") as stream:
-        settings = yaml.load(stream, Loader=yaml.FullLoader)
-        current_api_key = settings.get("api_key")
-
-    if current_api_key is None:
-        message = f"No api key found in {config_file}. Please specify first"
-        raise EnvironmentError(message)
-
-    return current_api_key
-
-
-def set_api_key(api_key):
-    config_file = get_config_file()
-    if config_file.exists():
-        with open(config_file, "r") as stream:
-            settings = yaml.load(stream, Loader=yaml.FullLoader)
-            current_api_key = settings.get("api_key")
-
-        if current_api_key is not None:
-            if current_api_key != api_key:
-                if not query_yes_no(
-                        f"The current api key {current_api_key} differs from {api_key}"):
-                    _logger.info("Goodbye...")
-                    sys.exit(0)
-            else:
-                _logger.info("Api key was already set before. Skip this")
-                return
-    else:
-        settings = dict()
-
-    settings["api_key"] = api_key
-
-    _logger.info(f"Writing {config_file}")
-    with open(config_file, "w") as stream:
-        yaml.dump(settings, stream)
-
-
-def get_response(api_key, ipaddress=None):
-    if ipaddress is None:
-        api_request = f"https://api.ipbase.com/json/?apikey={api_key}"
-    else:
-        api_request = f"https://api.ipbase.com/json/{ipaddress}?apikey='{api_key}'"
+def get_response(ipaddress='8.8.8.8'):
+    api_request = f"https://ipapi.co/{ipaddress}/json/"
     response = requests.get(api_request)
     if response.status_code != 200:
         raise requests.exceptions.RequestException("No valid response from api")
     return response
 
 
-def get_geo_location(api_key, ipaddress=None, reset_cache=False):
+def get_geo_location(ipaddress='8.8.8.8', reset_cache=False):
     """
     Get the location of the local machine of the ip address if given
     """
     cache_file = get_cache_file(ipaddress=ipaddress)
 
     if not cache_file.exists() or reset_cache:
-        response = get_response(api_key=api_key, ipaddress=ipaddress)
+        response = get_response( ipaddress=ipaddress)
         geo_info = response.json()
         _logger.debug(f"Writing to cache {cache_file}")
         with open(cache_file, "w") as stream:
@@ -176,7 +127,7 @@ def get_geo_location(api_key, ipaddress=None, reset_cache=False):
         _logger.debug(f"Reading geo_info from cache {cache_file}")
         with open(cache_file, "r") as stream:
             geo_info = json.load(stream)
-    _logger.debug(f"Getting geolocation from {ipaddress} with api {api_key}")
+    _logger.debug(f"Getting geolocation from {ipaddress}")
 
     return geo_info
 
@@ -230,16 +181,13 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
-        "--set_api_key", help="Set the API key in de config file. Request the api key at"
-                              "https://ipbase.com/"
-    )
-    parser.add_argument(
         "--reset_cache",
         action="store_true"
     )
     parser.add_argument(
         "--ip_address",
-        help="The ip address to get the geo location from. If not given, the local machine is used"
+        help="The ip address to get the geo location from. If not given, the local machine is used",
+        default="8.8.8.8"
     )
     parser.add_argument(
         "--version",
@@ -302,15 +250,7 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
 
-    if args.set_api_key is not None:
-        set_api_key(args.set_api_key)
-        sys.exit(0)
-
-    api_key = get_api_key()
-    _logger.debug(f"Retrieved api key {api_key}")
-
-    geo_info = get_geo_location(api_key=api_key,
-                                ipaddress=args.ip_address,
+    geo_info = get_geo_location(ipaddress=args.ip_address,
                                 reset_cache=args.reset_cache)
 
     create_output(geo_info, output_format=args.format)
