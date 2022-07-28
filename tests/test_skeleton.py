@@ -1,6 +1,6 @@
 import pytest
 
-from whereami.skeleton import fib, main
+from whereami.getlocation import fib, main
 
 __author__ = "eelco"
 __copyright__ = "eelco"
