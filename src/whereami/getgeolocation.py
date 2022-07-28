@@ -5,7 +5,10 @@ This script get the location of the current server
 import argparse
 import logging
 import sys
+import os
+from pathlib import Path
 import requests
+import yaml
 
 from whereami import __version__
 
@@ -21,6 +24,60 @@ _logger = logging.getLogger(__name__)
 # Python scripts/interactive interpreter, e.g. via
 # `from whereami.skeleton import fib`,
 # when using this Python module as a library.
+
+def query_yes_no(message):
+    answer = input(f"{message}. Continue? [y/N]")
+    if answer == "":
+        answer = "n"
+    try:
+        first_char = answer.lower()[0]
+    except IndexError:
+        _logger.debug(f"Answer was {answer}")
+    else:
+        if first_char == "y":
+            positive = True
+        elif first_char == "n":
+            positive = False
+        else:
+            _logger.warning("Please answer with [y/N] only.")
+            positive = query_yes_no(message)
+
+    return positive
+
+
+# with open(config_file, "w") as stream:
+
+def set_api_key(api_key):
+    try:
+        home = Path(os.environ.get("HOME"))
+    except TypeError:
+        msg = "Cannot get home directory. Please set your HOME environment variable"
+        raise TypeError(msg)
+
+    config_dir = home / Path(".config") / Path("whereami")
+    config_dir.mkdir(exist_ok=True, parents=True)
+    config_file = config_dir / Path("whereami.conf")
+    if config_file.exists():
+        with open(config_file, "r") as stream:
+            settings = yaml.load(stream, Loader=yaml.FullLoader)
+            current_api_key = settings.get("api_key")
+
+        if current_api_key is not None:
+            if current_api_key != api_key:
+                if not query_yes_no(f"The current api key {current_api_key} differs from {api_key}"):
+                    _logger.info("Goodbye...")
+                    sys.exit(0)
+            else:
+                _logger.info("Api key was already set before. Skip this")
+                return
+    else:
+        settings = dict()
+
+    settings["api_key"] = api_key
+
+    _logger.info(f"Writing {config_file}")
+    with open(config_file, "w") as stream:
+        yaml.dump(settings, stream)
 
 
 def getlocation():
@@ -47,7 +104,7 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
-        "--api-key",
+        "--set-api-key",
         default="1KNVyxf1lyYbgjib97DpZUEBBs8XDNCPZxZqF0Vs"
     )
     parser.add_argument(
@@ -69,7 +126,7 @@ def parse_args(args):
     )
     parser.add_argument(
         "-vv",
-        "--very-verbose",
+        "--debug",
         dest="loglevel",
         help="set loglevel to DEBUG",
         action="store_const",
@@ -103,6 +160,9 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
+
+    if args.set_api_key is not None:
+        set_api_key(args.set_api_key)
     _logger.info("Script ends here")
 
 
