@@ -186,7 +186,7 @@ def deg_to_dms(degrees_decimal):
     minutes_decimal = abs(degrees_decimal - degrees) * 60
     minutes = int(minutes_decimal)
     seconds_decimal = round((minutes_decimal - minutes) * 60, 1)
-    dms_coordinates = f"{degrees}°{minutes_decimal}'{seconds_decimal}''"
+    dms_coordinates = f"{degrees}°{minutes}'{seconds_decimal}''"
     return dms_coordinates
 
 
