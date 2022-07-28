@@ -112,12 +112,16 @@ def get_api_key() -> str:
     """
     config_file = get_config_file()
 
-    with open(config_file, "r") as stream:
-        settings = yaml.load(stream, Loader=yaml.FullLoader)
-        current_api_key = settings.get("api_key")
+    if config_file.exists():
+        with open(config_file, "r") as stream:
+            settings = yaml.load(stream, Loader=yaml.FullLoader)
+            current_api_key = settings.get("api_key")
 
-    if current_api_key is None:
-        message = f"No api key found in {config_file}. Please specify first"
+        if current_api_key is None:
+            message = f"No api key found in {config_file}. Please specify first"
+            raise EnvironmentError(message)
+    else:
+        message = f"No config file found. Please create first with set_api_key command"
         raise EnvironmentError(message)
 
     return current_api_key
