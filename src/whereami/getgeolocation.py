@@ -20,6 +20,8 @@ __license__ = "MIT"
 
 _logger = logging.getLogger(__name__)
 
+OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal"}
+
 
 # ---- Python API ----
 # The functions defined in this section can be imported by users in their
@@ -179,8 +181,35 @@ def get_geo_location(api_key, ipaddress=None, reset_cache=False):
     return geo_info
 
 
-def create_output(geo_info):
-    pprint.pprint(geo_info)
+def deg_to_dms(degrees_decimal):
+    degrees = int(degrees_decimal)
+    minutes_decimal = abs(degrees_decimal - degrees) * 60
+    minutes = int(minutes_decimal)
+    seconds_decimal = round((minutes_decimal - minutes) * 60, 1)
+    dms_coordinates = f"{degrees}°{minutes_decimal}'{seconds_decimal}''"
+    return dms_coordinates
+
+
+def create_output(geo_info, output_format=None):
+    if output_format in ("decimal", "sexagesimal"):
+        latitude = float(geo_info["latitude"])
+        longitude = float(geo_info["longitude"])
+        if output_format == "decimal":
+            msg = "{lat:.2f}, {lon:.2f}".format(lat=latitude, lon=longitude)
+        elif output_format == "sexagesimal":
+            lat_dms = deg_to_dms(latitude)
+            lon_dms = deg_to_dms(longitude)
+            msg = f"{lat_dms}, {lon_dms}"
+        print(msg)
+    elif output_format == "human":
+        country = geo_info["coutry_name"]
+        city = geo_info["city"]
+        msg = f"{city}/{country}"
+        print(msg)
+    elif output_format == "raw":
+        pprint.pprint(geo_info)
+    else:
+        raise AssertionError(f"Option {output_format} not recognised")
 
 
 # ---- CLI ----
@@ -216,6 +245,17 @@ def parse_args(args):
         "--version",
         action="version",
         version="whereami {ver}".format(ver=__version__),
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        help="Format of the output. Choices are:\n"
+             "decimal: Decimal latitude/longitude (default)\n"
+             "sexagesimal: Sexagesimal latitude/longitude\n"
+             "human: Human location City/Country\n"
+             "raw: raw output from api\n",
+        choices=OUTPUT_FORMATS,
+        default="decimal"
     )
     parser.add_argument(
         "-v",
@@ -273,7 +313,7 @@ def main(args):
                                 ipaddress=args.ip_address,
                                 reset_cache=args.reset_cache)
 
-    create_output(geo_info)
+    create_output(geo_info, output_format=args.format)
 
     _logger.info("Script ends here")
 
