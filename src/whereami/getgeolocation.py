@@ -186,7 +186,7 @@ def deg_to_dms(degrees_decimal):
     minutes_decimal = abs(degrees_decimal - degrees) * 60
     minutes = int(minutes_decimal)
     seconds_decimal = round((minutes_decimal - minutes) * 60, 1)
-    dms_coordinates = f"{degrees}°{minutes}'{seconds_decimal}''"
+    dms_coordinates = f"{degrees}°{minutes}'{seconds_decimal}¨"
     return dms_coordinates
 
 
@@ -249,11 +249,11 @@ def parse_args(args):
     parser.add_argument(
         "-f",
         "--format",
-        help="Format of the output. Choices are:\n"
-             "decimal: Decimal latitude/longitude (default)\n"
-             "sexagesimal: Sexagesimal latitude/longitude\n"
-             "human: Human location City/Country\n"
-             "raw: raw output from api\n",
+        help="Format of the output. Choices are: "
+             "decimal: Decimal latitude/longitude (default), "
+             "sexagesimal: Sexagesimal latitude/longitude,  "
+             "human: Human location City/Country,"
+             "raw: raw output from api",
         choices=OUTPUT_FORMATS,
         default="decimal"
     )
