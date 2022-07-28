@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import requests
 import yaml
+import json
 
 from whereami import __version__
 
@@ -45,7 +46,7 @@ def query_yes_no(message):
     return positive
 
 
-def get_config_file() -> Path:
+def get_config_dir() -> Path:
     """
     Get the configuration file for this utility
 
@@ -60,6 +61,40 @@ def get_config_file() -> Path:
 
     config_dir = home / Path(".config") / Path("whereami")
     config_dir.mkdir(exist_ok=True, parents=True)
+    return config_dir
+
+
+def get_cache_file(ipaddress) -> Path:
+    """
+    Get the cache file name based on the ip address
+    Args:
+        ipaddress:
+
+    Returns:
+
+    """
+
+    config_dir = get_config_dir()
+    cache_dir = config_dir / Path("cache")
+    cache_dir.mkdir(exist_ok=True)
+
+    if ipaddress is None:
+        suffix = "localhost"
+    else:
+        suffix = ipaddress
+
+    cache_file = cache_dir / Path("_".join(["resp", suffix]) + ".json")
+    return cache_file
+
+
+def get_config_file() -> Path:
+    """
+    Get the configuration file for this utility
+
+    Returns:
+        Path object of configuration file
+    """
+    config_dir = get_config_dir()
     config_file = config_dir / Path("whereami.conf")
 
     return config_file
@@ -111,10 +146,40 @@ def set_api_key(api_key):
         yaml.dump(settings, stream)
 
 
-def getlocation():
-    """Get the location
+def get_response(api_key, ipaddress=None):
+    if ipaddress is None:
+        api_request = f"https://api.ipbase.com/json/?apikey={api_key}"
+    else:
+        api_request = f"https://api.ipbase.com/json/{ipaddress}?apikey='{api_key}'"
+    response = requests.get(api_request)
+    if response.status_code != 200:
+        raise requests.exceptions.RequestException("No valid response from api")
+    return response
+
+
+def get_geo_location(api_key, ipaddress=None, reset_cache=False):
     """
-    return None
+    Get the location of the local machine of the ip address if given
+    """
+    cache_file = get_cache_file(ipaddress=ipaddress)
+
+    if not cache_file.exists() or reset_cache:
+        response = get_response(api_key=api_key, ipaddress=ipaddress)
+        geo_info = response.json()
+        _logger.debug(f"Writing to cache {cache_file}")
+        with open(cache_file, "w") as stream:
+            json.dump(geo_info, stream, indent=True)
+    else:
+        _logger.debug(f"Reading geo_info from cache {cache_file}")
+        with open(cache_file, "r") as stream:
+            geo_info = json.load(stream)
+    _logger.debug(f"Getting geolocation from {ipaddress} with api {api_key}")
+
+    return geo_info
+
+
+def create_output(geo_info):
+    print(geo_info)
 
 
 # ---- CLI ----
@@ -135,12 +200,16 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
-        "--set-api-key", help="Set the API key in de config file. Request the api key at"
+        "--set_api_key", help="Set the API key in de config file. Request the api key at"
                               "https://ipbase.com/"
     )
     parser.add_argument(
-        "--reset-cache",
+        "--reset_cache",
         action="store_true"
+    )
+    parser.add_argument(
+        "--ip_address",
+        help="The ip address to get the geo location from. If not given, the local machine is used"
     )
     parser.add_argument(
         "--version",
@@ -198,6 +267,12 @@ def main(args):
 
     api_key = get_api_key()
     _logger.debug(f"Retrieved api key {api_key}")
+
+    geo_info = get_geo_location(api_key=api_key,
+                                ipaddress=args.ip_address,
+                                reset_cache=args.reset_cache)
+
+    create_output(geo_info)
 
     _logger.info("Script ends here")
 
