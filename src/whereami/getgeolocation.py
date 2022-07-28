@@ -202,7 +202,7 @@ def create_output(geo_info, output_format=None):
             msg = f"{lat_dms}, {lon_dms}"
         print(msg)
     elif output_format == "human":
-        country = geo_info["coutry_name"]
+        country = geo_info["country_name"]
         city = geo_info["city"]
         msg = f"{city}/{country}"
         print(msg)
