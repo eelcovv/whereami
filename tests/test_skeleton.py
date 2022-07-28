@@ -1,6 +1,6 @@
 import pytest
 
-from whereami.getlocation import fib, main
+from whereami.getgeolocation import deg_to_dms
 
 __author__ = "eelco"
 __copyright__ = "eelco"
@@ -9,11 +9,9 @@ __license__ = "MIT"
 
 def test_fib():
     """API Tests"""
-    assert fib(1) == 1
-    assert fib(2) == 1
-    assert fib(7) == 13
+    assert deg_to_dms(42.0) == 1
     with pytest.raises(AssertionError):
-        fib(-10)
+        deg_to_dms(-10)
 
 
 def test_main(capsys):
