@@ -10,6 +10,7 @@ from pathlib import Path
 import requests
 import yaml
 import json
+import pprint
 
 from whereami import __version__
 
@@ -179,7 +180,7 @@ def get_geo_location(api_key, ipaddress=None, reset_cache=False):
 
 
 def create_output(geo_info):
-    print(geo_info)
+    pprint.pprint(geo_info)
 
 
 # ---- CLI ----
