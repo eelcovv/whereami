@@ -106,8 +106,14 @@ def get_config_file() -> Path:
 def get_response(ipaddress='8.8.8.8'):
     api_request = f"https://ipapi.co/{ipaddress}/json/"
     response = requests.get(api_request)
-    if response.status_code != 200:
-        raise requests.exceptions.RequestException("No valid response from api")
+    if response.status_code == 200:
+        _logger.info("Succesfull response")
+    elif response.status_code == 407:
+        _logger.warning(f"Rate limit reached as status is {response.status_code}")
+        raise requests.exceptions.RequestException("Rate limit reached for api")
+    else:
+        _logger.warning(f"Someting else went wrong with code {response.status_code}")
+        raise requests.exceptions.RequestException("Something else went wrong for api")
     return response
 
 
