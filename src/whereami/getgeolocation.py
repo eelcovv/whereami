@@ -32,16 +32,16 @@ def query_yes_no(message):
         answer = "n"
     try:
         first_char = answer.lower()[0]
-    except IndexError:
-        _logger.debug(f"Answer was {answer}")
+    except AssertionError:
+        raise AssertionError("Could not get first character. This should not happen")
+
+    if first_char == "y":
+        positive = True
+    elif first_char == "n":
+        positive = False
     else:
-        if first_char == "y":
-            positive = True
-        elif first_char == "n":
-            positive = False
-        else:
-            _logger.warning("Please answer with [y/N] only.")
-            positive = query_yes_no(message)
+        _logger.warning("Please answer with [y/N] only.")
+        positive = query_yes_no(message)
 
     return positive
 
