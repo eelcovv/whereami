@@ -45,9 +45,13 @@ def query_yes_no(message):
     return positive
 
 
-# with open(config_file, "w") as stream:
+def get_config_file() -> Path:
+    """
+    Get the configuration file for this utility
 
-def set_api_key(api_key):
+    Returns:
+        Path object of configuration file
+    """
     try:
         home = Path(os.environ.get("HOME"))
     except TypeError:
@@ -57,6 +61,32 @@ def set_api_key(api_key):
     config_dir = home / Path(".config") / Path("whereami")
     config_dir.mkdir(exist_ok=True, parents=True)
     config_file = config_dir / Path("whereami.conf")
+
+    return config_file
+
+
+def get_api_key() -> str:
+    """
+    Get the current api key
+
+    Returns: str
+        Current api key
+    """
+    config_file = get_config_file()
+
+    with open(config_file, "r") as stream:
+        settings = yaml.load(stream, Loader=yaml.FullLoader)
+        current_api_key = settings.get("api_key")
+
+    if current_api_key is None:
+        message = f"No api key found in {config_file}. Please specify first"
+        raise EnvironmentError(message)
+
+    return current_api_key
+
+
+def set_api_key(api_key):
+    config_file = get_config_file()
     if config_file.exists():
         with open(config_file, "r") as stream:
             settings = yaml.load(stream, Loader=yaml.FullLoader)
@@ -64,7 +94,8 @@ def set_api_key(api_key):
 
         if current_api_key is not None:
             if current_api_key != api_key:
-                if not query_yes_no(f"The current api key {current_api_key} differs from {api_key}"):
+                if not query_yes_no(
+                        f"The current api key {current_api_key} differs from {api_key}"):
                     _logger.info("Goodbye...")
                     sys.exit(0)
             else:
@@ -104,8 +135,8 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
-        "--set-api-key",
-        default="1KNVyxf1lyYbgjib97DpZUEBBs8XDNCPZxZqF0Vs"
+        "--set-api-key", help="Set the API key in de config file. Request the api key at"
+                              "https://ipbase.com/"
     )
     parser.add_argument(
         "--reset-cache",
@@ -163,6 +194,11 @@ def main(args):
 
     if args.set_api_key is not None:
         set_api_key(args.set_api_key)
+        sys.exit(0)
+
+    api_key = get_api_key()
+    _logger.debug(f"Retrieved api key {api_key}")
+
     _logger.info("Script ends here")
 
 
