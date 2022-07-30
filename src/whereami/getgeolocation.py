@@ -3,14 +3,27 @@ This script get the location of the current server
 """
 
 import argparse
+import json
 import logging
-import sys
 import os
+import pprint
+import sys
+import geocoder
+import socket
 from pathlib import Path
+
 import requests
 import yaml
-import json
-import pprint
+
+try:
+    import country_converter as coco
+except ModuleNotFoundError:
+    coco = None
+
+try:
+    from latloncalc import latlon as llc
+except ModuleNotFoundError:
+    llc = None
 
 from whereami import __version__
 
@@ -153,34 +166,46 @@ def set_api_key(api_key):
         yaml.dump(settings, stream)
 
 
-def get_response(api_key, ipaddress=None):
+def get_response(ipaddress=None):
     if ipaddress is None:
-        api_request = f"https://api.ipbase.com/json/?apikey={api_key}"
+        hostname = socket.gethostname()
+        _logger.debug(f"Found local hostname {hostname}")
+        local_ip = socket.gethostbyname(hostname)
+        local_ip = '192.168.1.41'
+        _logger.debug(f"Found local ip {local_ip}")
+        api_request = 'http://freegeoip.net/json/' + local_ip
     else:
-        api_request = f"https://api.ipbase.com/json/{ipaddress}?apikey='{api_key}'"
+        api_request = 'http://freegeoip.net/json/' + ipaddress
     response = requests.get(api_request)
     if response.status_code != 200:
         raise requests.exceptions.RequestException("No valid response from api")
     return response
 
 
-def get_geo_location(api_key, ipaddress=None, reset_cache=False):
+def get_geo_location_device(my_location):
+    geo_info = geocoder.reverse(my_location)
+
+    return geo_info
+
+
+def get_geo_location_ip(ipaddress=None, reset_cache=False):
     """
     Get the location of the local machine of the ip address if given
     """
     cache_file = get_cache_file(ipaddress=ipaddress)
 
     if not cache_file.exists() or reset_cache:
-        response = get_response(api_key=api_key, ipaddress=ipaddress)
-        geo_info = response.json()
-        _logger.debug(f"Writing to cache {cache_file}")
+        if ipaddress is None:
+            geocode = geocoder.ip("me")
+        else:
+            geocode = geocoder.ip(ipaddress)
+        geo_info = geocode.geojson['features'][0]['properties']
         with open(cache_file, "w") as stream:
             json.dump(geo_info, stream, indent=True)
     else:
         _logger.debug(f"Reading geo_info from cache {cache_file}")
         with open(cache_file, "r") as stream:
             geo_info = json.load(stream)
-    _logger.debug(f"Getting geolocation from {ipaddress} with api {api_key}")
 
     return geo_info
 
@@ -190,23 +215,36 @@ def deg_to_dms(degrees_decimal):
     minutes_decimal = abs(degrees_decimal - degrees) * 60
     minutes = int(minutes_decimal)
     seconds_decimal = round((minutes_decimal - minutes) * 60, 1)
-    dms_coordinates = f"{degrees}°{minutes}'{seconds_decimal}¨"
+    dms_coordinates = f"{degrees}° {minutes}' {seconds_decimal}″"
     return dms_coordinates
 
 
-def create_output(geo_info, output_format=None):
+def create_output(geo_info, output_format=None, n_digits_seconds=1):
     if output_format in ("decimal", "sexagesimal"):
-        latitude = float(geo_info["latitude"])
-        longitude = float(geo_info["longitude"])
+        latitude = float(geo_info["lat"])
+        longitude = float(geo_info["lng"])
         if output_format == "decimal":
-            msg = "{lat:.2f}, {lon:.2f}".format(lat=latitude, lon=longitude)
+
+            strfrm = "{:." + f"{n_digits_seconds + 1}" + "f}"
+            msg = ", ".join([strfrm.format(latitude), strfrm.format(longitude)])
         elif output_format == "sexagesimal":
-            lat_dms = deg_to_dms(latitude)
-            lon_dms = deg_to_dms(longitude)
-            msg = f"{lat_dms}, {lon_dms}"
+            if llc is None:
+                lat_dms = deg_to_dms(latitude)
+                lon_dms = deg_to_dms(longitude)
+                msg = f"{lat_dms}, {lon_dms}"
+            else:
+                latlon = llc.LatLon(lat=latitude, lon=longitude)
+                msg = latlon.to_string(formatter="d%° %m%′ %S%″ %H",
+                                       n_digits_seconds=n_digits_seconds)
+
         print(msg)
     elif output_format == "human":
-        country = geo_info["country_name"]
+        country_code = geo_info["country"]
+        if coco is not None:
+            country_name = coco.convert(country_code, to="name_short")
+            country = country_name + f" ({country_code})"
+        else:
+            country = country_code
         city = geo_info["city"]
         msg = f"{city}/{country}"
         print(msg)
@@ -234,13 +272,12 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
-        "--set_api_key", help="Set the API key in de config file. Request the api key at"
-                              "https://ipbase.com/"
-    )
-    parser.add_argument(
         "--reset_cache",
         action="store_true"
     )
+    parser.add_argument("--n_digits_seconds", type=int, default=1,
+                        help="Number of digits to use for the seconds notation. If a decimal "
+                             "notation is used, the number of decimals will be n_digit_seconds + 1")
     parser.add_argument(
         "--ip_address",
         help="The ip address to get the geo location from. If not given, the local machine is used"
@@ -277,6 +314,10 @@ def parse_args(args):
         action="store_const",
         const=logging.DEBUG,
     )
+    parser.add_argument(
+        "--my_location",
+        help="Define the location of your device",
+    )
     return parser.parse_args(args)
 
 
@@ -306,18 +347,14 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
 
-    if args.set_api_key is not None:
-        set_api_key(args.set_api_key)
-        sys.exit(0)
+    geo_info_device = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
 
-    api_key = get_api_key()
-    _logger.debug(f"Retrieved api key {api_key}")
+    if args.my_location is not None:
+        geo_info_device = get_geo_location_device(my_location=args.my_location,
+                                                  reset_cache=args.reset_cache)
 
-    geo_info = get_geo_location(api_key=api_key,
-                                ipaddress=args.ip_address,
-                                reset_cache=args.reset_cache)
-
-    create_output(geo_info, output_format=args.format)
+    create_output(geo_info_device, output_format=args.format,
+                  n_digits_seconds=args.n_digits_seconds)
 
     _logger.info("Script ends here")
 
