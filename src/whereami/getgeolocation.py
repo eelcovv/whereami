@@ -236,16 +236,10 @@ def parse_args(args):
         default=False
     )
     parser.add_argument(
-        "--write_cache",
+        "--skip_cache",
         action="store_true",
-        help="Write the locations to cache file",
-        default=True
-    )
-    parser.add_argument(
-        "--no_write_cache",
-        action="store_false",
-        help="Never read and write cache file. Implies reset cache",
-        dest="write_cache"
+        help="Do not read of write to the cache file",
+        default=False,
     )
     parser.add_argument("--n_digits_seconds", type=int, default=1,
                         help="Number of digits to use for the seconds notation. If a decimal "
@@ -321,15 +315,17 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
 
-    reset_cache = args.reset_cache & args.write_cache
+    write_cache = not args.skip_cache
+
+    reset_cache = args.reset_cache & write_cache
 
     geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address,
                                       reset_cache=reset_cache,
-                                      write_cache=args.write_cache)
+                                      write_cache=write_cache)
 
     my_device_latlon = get_geo_location_device(my_location=args.my_location,
                                                reset_cache=reset_cache,
-                                               write_cache=args.write_cache)
+                                               write_cache=write_cache)
     if my_device_latlon is not None:
         geo_info_ip["my_location"] = args.my_location
         for key, value in my_device_latlon.items():
