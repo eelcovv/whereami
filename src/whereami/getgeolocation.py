@@ -307,7 +307,7 @@ def main(args):
         try:
             geo_info_ip["distance"] = get_distance_to_server(geo_info_ip)
         except TypeError:
-            _logger.warning(f"Failed to calculate distance to {my_device_latlon}")
+            _logger.warning(f"Failed to calculate distance to {my_device_latlon}\n\n")
 
     server = LocationReport(geo_info=geo_info_ip,
                             n_digits_seconds=args.n_digits_seconds)
