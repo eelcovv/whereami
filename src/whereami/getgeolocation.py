@@ -126,7 +126,7 @@ class LocationReport:
 
     def report_short(self):
         """ Give a one line short location """
-        msg = f"Server {self.ip_address} is located at ({self.location_sexagesimal})"
+        msg = f"Server {self.ip_address} @ {self.location_human} has coordinates ({self.location_sexagesimal})"
         if self.distance is not None and self.distance > 0:
             distance = int(round(self.distance, 0))
             msg += f"\nDistance from {self.my_location} ({self.location_me}):  {distance}km."
