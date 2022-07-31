@@ -122,7 +122,7 @@ class LocationReport:
         print(formatter.format("  sexagesimal", self.location_sexagesimal))
         print(formatter.format("  human", self.location_human))
         if self.distance is not None and self.distance > 0:
-            print(f"Distance from device {self.my_location}: {self.distance:.0f} km")
+            print(f"Distance from device @ {self.my_location}: {self.distance:.0f} km")
 
     def report_short(self):
         """ Give a one line short location """
