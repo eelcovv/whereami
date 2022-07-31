@@ -121,13 +121,13 @@ class LocationReport:
         print(formatter.format("  decimal", self.location_decimal))
         print(formatter.format("  sexagesimal", self.location_sexagesimal))
         print(formatter.format("  human", self.location_human))
-        if self.distance is not None:
+        if self.distance is not None and self.distance > 0:
             print(f"Distance from device {self.my_location}: {self.distance:.0f} km")
 
     def report_short(self):
         """ Give a one line short location """
         msg = f"Server {self.ip_address} is located at ({self.location_sexagesimal})"
-        if self.distance is not None :
+        if self.distance is not None and self.distance > 0:
             distance = int(round(self.distance, 0))
             msg += f"\nDistance from {self.my_location} ({self.location_me}):  {distance}km."
         print(msg)
