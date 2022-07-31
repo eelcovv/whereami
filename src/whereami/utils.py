@@ -132,7 +132,10 @@ def get_cache_file(ipaddress, write_cache=True) -> Path:
     """
     Get the cache file name based on the ip address
     Args:
-        ipaddress:
+        ipaddress: str
+            Ip address of the cache file
+        write_cache: bool
+            Write the cache file
 
     Returns:
 

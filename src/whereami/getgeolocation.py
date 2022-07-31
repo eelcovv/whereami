@@ -199,7 +199,7 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
             Write the cache
 
     """
-    cache_file = get_cache_file(ipaddress=ipaddress)
+    cache_file = get_cache_file(ipaddress=ipaddress, write_cache=write_cache)
 
     if not cache_file.exists() or reset_cache or write_cache:
         if ipaddress is None:
@@ -317,7 +317,7 @@ def main(args):
 
     write_cache = not args.skip_cache
 
-    reset_cache = args.reset_cache & write_cache
+    reset_cache = args.reset_cache | args.skip_cache
 
     geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address,
                                       reset_cache=reset_cache,
