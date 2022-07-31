@@ -62,6 +62,13 @@ class LocationReport:
         self.location_human = make_human_location(country_code=geo_info["country"],
                                                   city=geo_info["city"])
 
+        if self.my_location is not None:
+            my_lat = geo_info["my_lat"]
+            my_lng = geo_info["my_lng"]
+            self.location_me = make_sexagesimal_location(latitude=my_lat,
+                                                         longitude=my_lng,
+                                                         n_digits_seconds=n_digits_seconds)
+
     def make_report(self, output_format: str = "sexagesimal"):
         """
         Make a report of the location
@@ -122,7 +129,7 @@ class LocationReport:
         msg = f"Server {self.ip_address} is located at ({self.location_sexagesimal})"
         if self.my_location is not None:
             distance = int(round(self.distance, 0))
-            msg += f", which is {distance} km away of {self.my_location}"
+            msg += f"\nDistance from {self.my_location} ({self.location_me}):  {distance}km."
         print(msg)
 
 
@@ -164,16 +171,22 @@ def get_geo_location_device(my_location, reset_cache=False):
     """
     cache_file = get_cache_file(ipaddress="my_location")
 
-    if not cache_file.exists() or reset_cache:
+    if not cache_file.exists() or reset_cache or my_location is not None:
         if my_location is None:
             geocode = geocoder.ip("me")
             geo_info = geocode.geojson['features'][0]['properties']
-            latlon = (geo_info["latitude"], geo_info["longitude"])
+
+            location_human = make_human_location(country_code=geo_info["country"],
+                                                 city=geo_info["city"])
+            location = {"my_location": location_human,
+                        "my_lat": geo_info["lat"],
+                        "my_lng": geo_info["lng"]}
         else:
             latlon = geocoder.location(my_location)
-
-        location = {"my_lat": latlon.lat,
-                    "my_lng": latlon.lng}
+            location = {
+                "my_location": my_location,
+                "my_lat": latlon.lat,
+                "my_lng": latlon.lng}
 
         _logger.debug(f"Writing my location to cache {cache_file}")
         with open(cache_file, "w") as stream:
@@ -300,9 +313,9 @@ def main(args):
 
     geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
 
-    if args.my_location is not None:
-        my_device_latlon = get_geo_location_device(my_location=args.my_location,
-                                                   reset_cache=args.reset_cache)
+    my_device_latlon = get_geo_location_device(my_location=args.my_location,
+                                               reset_cache=args.reset_cache)
+    if my_device_latlon is not None:
         geo_info_ip["my_location"] = args.my_location
         for key, value in my_device_latlon.items():
             geo_info_ip[key] = value
