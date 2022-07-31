@@ -13,19 +13,12 @@ import socket
 from pathlib import Path
 
 import requests
-import yaml
-
-try:
-    import country_converter as coco
-except ModuleNotFoundError:
-    coco = None
-
-try:
-    from latloncalc import latlon as llc
-except ModuleNotFoundError:
-    llc = None
 
 from whereami import __version__
+from whereami.utils import (make_sexagesimal_location,
+                            make_decimal_location,
+                            make_human_location,
+                            get_cache_file)
 
 __author__ = "eelco"
 __copyright__ = "eelco"
@@ -33,7 +26,85 @@ __license__ = "MIT"
 
 _logger = logging.getLogger(__name__)
 
-OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal"}
+OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal", "full"}
+
+
+class LocationReport:
+    """
+    Object to report the location of the server
+
+    Args:
+        geo_info: dict
+            Output of geocoder
+        n_digits_seconds: int
+            Number of digits to use for the seconds in the d-m-s notation of the location
+    """
+
+    def __init__(self, geo_info, n_digits_seconds=1):
+
+        self.geo_info = geo_info
+
+        latitude = float(geo_info["lat"])
+        longitude = float(geo_info["lng"])
+
+        self.location_sexagesimal = make_sexagesimal_location(latitude=latitude,
+                                                              longitude=longitude,
+                                                              n_digits_seconds=n_digits_seconds)
+        self.location_decimal = make_decimal_location(latitude=latitude,
+                                                      longitude=longitude,
+                                                      n_decimals=n_digits_seconds + 1)
+        self.location_human = make_human_location(country_code=geo_info["country"],
+                                                  city=geo_info["city"])
+
+    def make_report(self, output_format: str = "sexagesimal"):
+        """
+        Make a report of the location
+
+        Args:
+            output_format: str
+                Type of report to make:
+
+                    decimal:        decimal representation of location
+                    sexagesimal:    sexagesimal representation of location
+                    human:          human representation of location
+                    raw:            raw output of geolocation
+                    full:           full report with all information
+        """
+        if output_format == "decimal":
+            self.report_location_decimal()
+        elif output_format == "sexagesimal":
+            self.report_location_sexagesimal()
+        elif output_format == "human":
+            self.report_location_human()
+        elif output_format == "raw":
+            self.report_location_raw()
+        elif output_format == "full":
+            self.report_full()
+        else:
+            raise ValueError(f"Option {output_format} not recognised")
+
+    def report_location_decimal(self):
+        """ Print the location as a decimal representation """
+        print(self.location_decimal)
+
+    def report_location_sexagesimal(self):
+        """ Print the location as a sexagesimal representation """
+        print(self.location_sexagesimal)
+
+    def report_location_human(self):
+        """ Print the location as City/Country representation """
+        print(self.location_human)
+
+    def report_location_raw(self):
+        """ Show the raw output of the geocoder module  """
+        pprint.pprint(self.geo_info)
+
+    def report_full(self):
+        """ Give a full report of the location """
+        formatter = "{:15s} : {}"
+        print(formatter.format("Location (decimal)", self.location_decimal))
+        print(formatter.format("Location (sexagesimal)", self.location_sexagesimal))
+        print(formatter.format("Location (human)", self.location_human))
 
 
 # ---- Python API ----
@@ -41,129 +112,6 @@ OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal"}
 # Python scripts/interactive interpreter, e.g. via
 # `from whereami.skeleton import fib`,
 # when using this Python module as a library.
-
-def query_yes_no(message):
-    answer = input(f"{message}. Continue? [y/N]")
-    if answer == "":
-        answer = "n"
-    try:
-        first_char = answer.lower()[0]
-    except AssertionError:
-        raise AssertionError("Could not get first character. This should not happen")
-
-    if first_char == "y":
-        positive = True
-    elif first_char == "n":
-        positive = False
-    else:
-        _logger.warning("Please answer with [y/N] only.")
-        positive = query_yes_no(message)
-
-    return positive
-
-
-def get_config_dir() -> Path:
-    """
-    Get the configuration file for this utility
-
-    Returns:
-        Path object of configuration file
-    """
-    try:
-        home = Path(os.environ.get("HOME"))
-    except TypeError:
-        msg = "Cannot get home directory. Please set your HOME environment variable"
-        raise TypeError(msg)
-
-    config_dir = home / Path(".config") / Path("whereami")
-    config_dir.mkdir(exist_ok=True, parents=True)
-    return config_dir
-
-
-def get_cache_file(ipaddress) -> Path:
-    """
-    Get the cache file name based on the ip address
-    Args:
-        ipaddress:
-
-    Returns:
-
-    """
-
-    config_dir = get_config_dir()
-    cache_dir = config_dir / Path("cache")
-    cache_dir.mkdir(exist_ok=True)
-
-    if ipaddress is None:
-        suffix = "localhost"
-    else:
-        suffix = ipaddress
-
-    cache_file = cache_dir / Path("_".join(["resp", suffix]) + ".json")
-    return cache_file
-
-
-def get_config_file() -> Path:
-    """
-    Get the configuration file for this utility
-
-    Returns:
-        Path object of configuration file
-    """
-    config_dir = get_config_dir()
-    config_file = config_dir / Path("whereami.conf")
-
-    return config_file
-
-
-def get_api_key() -> str:
-    """
-    Get the current api key
-
-    Returns: str
-        Current api key
-    """
-    config_file = get_config_file()
-
-    if config_file.exists():
-        with open(config_file, "r") as stream:
-            settings = yaml.load(stream, Loader=yaml.FullLoader)
-            current_api_key = settings.get("api_key")
-
-        if current_api_key is None:
-            message = f"No api key found in {config_file}. Please specify first"
-            raise EnvironmentError(message)
-    else:
-        message = f"No config file found. Please create first with set_api_key command"
-        raise EnvironmentError(message)
-
-    return current_api_key
-
-
-def set_api_key(api_key):
-    config_file = get_config_file()
-    if config_file.exists():
-        with open(config_file, "r") as stream:
-            settings = yaml.load(stream, Loader=yaml.FullLoader)
-            current_api_key = settings.get("api_key")
-
-        if current_api_key is not None:
-            if current_api_key != api_key:
-                if not query_yes_no(
-                        f"The current api key {current_api_key} differs from {api_key}"):
-                    _logger.info("Goodbye...")
-                    sys.exit(0)
-            else:
-                _logger.info("Api key was already set before. Skip this")
-                return
-    else:
-        settings = dict()
-
-    settings["api_key"] = api_key
-
-    _logger.info(f"Writing {config_file}")
-    with open(config_file, "w") as stream:
-        yaml.dump(settings, stream)
 
 
 def get_response(ipaddress=None):
@@ -182,8 +130,24 @@ def get_response(ipaddress=None):
     return response
 
 
-def get_geo_location_device(my_location):
+def get_geo_location_device(my_location, reset_cache=False):
     geo_info = geocoder.reverse(my_location)
+    ipaddress = geo_info["ip"]
+
+    cache_file = get_cache_file(ipaddress="my_location")
+
+    if not cache_file.exists() or reset_cache:
+        if ipaddress is None:
+            geocode = geocoder.ip("me")
+        else:
+            geocode = geocoder.ip(ipaddress)
+        geo_info = geocode.geojson['features'][0]['properties']
+        with open(cache_file, "w") as stream:
+            json.dump(geo_info, stream, indent=True)
+    else:
+        _logger.debug(f"Reading geo_info from cache {cache_file}")
+        with open(cache_file, "r") as stream:
+            geo_info = json.load(stream)
 
     return geo_info
 
@@ -208,56 +172,6 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False):
             geo_info = json.load(stream)
 
     return geo_info
-
-
-def deg_to_dms(degrees_decimal):
-    degrees = int(degrees_decimal)
-    minutes_decimal = abs(degrees_decimal - degrees) * 60
-    minutes = int(minutes_decimal)
-    seconds_decimal = round((minutes_decimal - minutes) * 60, 1)
-    dms_coordinates = f"{degrees}° {minutes}' {seconds_decimal}″"
-    return dms_coordinates
-
-
-def create_output(geo_info, output_format=None, n_digits_seconds=1):
-    if output_format in ("decimal", "sexagesimal"):
-        latitude = float(geo_info["lat"])
-        longitude = float(geo_info["lng"])
-        if output_format == "decimal":
-
-            strfrm = "{:." + f"{n_digits_seconds + 1}" + "f}"
-            msg = ", ".join([strfrm.format(latitude), strfrm.format(longitude)])
-        elif output_format == "sexagesimal":
-            if llc is None:
-                lat_dms = deg_to_dms(latitude)
-                lon_dms = deg_to_dms(longitude)
-                msg = f"{lat_dms}, {lon_dms}"
-            else:
-                latlon = llc.LatLon(lat=latitude, lon=longitude)
-                msg = latlon.to_string(formatter="d%° %m%′ %S%″ %H",
-                                       n_digits_seconds=n_digits_seconds)
-
-        print(msg)
-    elif output_format == "human":
-        country_code = geo_info["country"]
-        if coco is not None:
-            country_name = coco.convert(country_code, to="name_short")
-            country = country_name + f" ({country_code})"
-        else:
-            country = country_code
-        city = geo_info["city"]
-        msg = f"{city}/{country}"
-        print(msg)
-    elif output_format == "raw":
-        pprint.pprint(geo_info)
-    else:
-        raise AssertionError(f"Option {output_format} not recognised")
-
-
-# ---- CLI ----
-# The functions defined in this section are wrappers around the main Python
-# API allowing them to be called directly from the terminal as a CLI
-# executable/script.
 
 
 def parse_args(args):
@@ -294,6 +208,7 @@ def parse_args(args):
              "decimal: Decimal latitude/longitude (default), "
              "sexagesimal: Sexagesimal latitude/longitude,  "
              "human: Human location City/Country,"
+             "full: Full report"
              "raw: raw output from api",
         choices=OUTPUT_FORMATS,
         default="decimal"
@@ -316,7 +231,8 @@ def parse_args(args):
     )
     parser.add_argument(
         "--my_location",
-        help="Define the location of your device",
+        help="Define the location of your device which is used to calculate the distance to "
+             "the server",
     )
     return parser.parse_args(args)
 
@@ -347,14 +263,18 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
 
-    geo_info_device = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
+    geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
 
     if args.my_location is not None:
         geo_info_device = get_geo_location_device(my_location=args.my_location,
                                                   reset_cache=args.reset_cache)
+        device = LocationReport(geo_info=geo_info_device,
+                                n_digits_seconds=args.n_digits_seconds)
+        device.make_report()
 
-    create_output(geo_info_device, output_format=args.format,
-                  n_digits_seconds=args.n_digits_seconds)
+    server = LocationReport(geo_info=geo_info_ip,
+                            n_digits_seconds=args.n_digits_seconds)
+    server.make_report(output_format=args.format)
 
     _logger.info("Script ends here")
 
