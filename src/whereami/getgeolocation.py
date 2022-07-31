@@ -140,7 +140,7 @@ class LocationReport:
 # when using this Python module as a library.
 
 
-def get_geo_location_device(my_location, reset_cache=False):
+def get_geo_location_device(my_location, reset_cache=False, write_cache=True):
     """
     Get the latitude/longitude from your location given by my_location
 
@@ -149,11 +149,13 @@ def get_geo_location_device(my_location, reset_cache=False):
             Name of your device location, e.g 'Ottawa, ON'
         reset_cache: bool
             Reset the cache
+        write_cache: bool
+            Write the locations to cache file
 
     Returns: tuple
         Latitude, longitude in decimal representation
     """
-    cache_file = get_cache_file(ipaddress="my_location")
+    cache_file = get_cache_file(ipaddress="my_location", write_cache=write_cache)
 
     if not cache_file.exists() or reset_cache or my_location is not None:
         if my_location is None:
@@ -173,8 +175,9 @@ def get_geo_location_device(my_location, reset_cache=False):
                 "my_lng": latlon.lng}
 
         _logger.debug(f"Writing my location to cache {cache_file}")
-        with open(cache_file, "w") as stream:
-            json.dump(location, stream, indent=True)
+        if write_cache:
+            with open(cache_file, "w") as stream:
+                json.dump(location, stream, indent=True)
     else:
         _logger.debug(f"Reading my location from cache {cache_file}")
         with open(cache_file, "r") as stream:
@@ -183,21 +186,31 @@ def get_geo_location_device(my_location, reset_cache=False):
     return location
 
 
-def get_geo_location_ip(ipaddress=None, reset_cache=False):
+def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
     """
     Get the location of the local machine of the ip address if given
+
+    Args:
+        ipaddress: str
+            Ip address
+        reset_cache: bool
+            Reset the cache
+        write_cache:
+            Write the cache
+
     """
     cache_file = get_cache_file(ipaddress=ipaddress)
 
-    if not cache_file.exists() or reset_cache:
+    if not cache_file.exists() or reset_cache or write_cache:
         if ipaddress is None:
             geocode = geocoder.ip("me")
         else:
             geocode = geocoder.ip(ipaddress)
         geo_info = geocode.geojson['features'][0]['properties']
         _logger.debug(f"Storing geo_info to cache {cache_file}")
-        with open(cache_file, "w") as stream:
-            json.dump(geo_info, stream, indent=True)
+        if write_cache:
+            with open(cache_file, "w") as stream:
+                json.dump(geo_info, stream, indent=True)
     else:
         _logger.debug(f"Reading geo_info from cache {cache_file}")
         with open(cache_file, "r") as stream:
@@ -219,7 +232,20 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description="Get the location of your ip address")
     parser.add_argument(
         "--reset_cache",
-        action="store_true"
+        action="store_true",
+        default=False
+    )
+    parser.add_argument(
+        "--write_cache",
+        action="store_true",
+        help="Write the locations to cache file",
+        default=True
+    )
+    parser.add_argument(
+        "--no_write_cache",
+        action="store_false",
+        help="Never read and write cache file. Implies reset cache",
+        dest="write_cache"
     )
     parser.add_argument("--n_digits_seconds", type=int, default=1,
                         help="Number of digits to use for the seconds notation. If a decimal "
@@ -295,10 +321,15 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.debug("Starting getting location...")
 
-    geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
+    reset_cache = args.reset_cache & args.write_cache
+
+    geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address,
+                                      reset_cache=reset_cache,
+                                      write_cache=args.write_cache)
 
     my_device_latlon = get_geo_location_device(my_location=args.my_location,
-                                               reset_cache=args.reset_cache)
+                                               reset_cache=reset_cache,
+                                               write_cache=args.write_cache)
     if my_device_latlon is not None:
         geo_info_ip["my_location"] = args.my_location
         for key, value in my_device_latlon.items():

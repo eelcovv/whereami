@@ -128,7 +128,7 @@ def query_yes_no(message):
     return positive
 
 
-def get_cache_file(ipaddress) -> Path:
+def get_cache_file(ipaddress, write_cache=True) -> Path:
     """
     Get the cache file name based on the ip address
     Args:
@@ -139,7 +139,9 @@ def get_cache_file(ipaddress) -> Path:
     """
 
     cache_dir = Path(appdirs.user_cache_dir("whereami"))
-    cache_dir.mkdir(exist_ok=True, parents=True)
+
+    if write_cache:
+        cache_dir.mkdir(exist_ok=True, parents=True)
 
     if ipaddress is None:
         suffix = "localhost"
@@ -151,9 +153,7 @@ def get_cache_file(ipaddress) -> Path:
 
 
 def get_distance_to_server(geo_info):
-
     latlon_server = llc.LatLon(lat=geo_info["lat"], lon=geo_info["lng"])
     latlon_device = llc.LatLon(lat=geo_info["my_lat"], lon=geo_info["my_lng"])
 
     return latlon_server.distance(latlon_device)
-
