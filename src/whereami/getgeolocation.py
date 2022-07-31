@@ -62,7 +62,7 @@ class LocationReport:
         self.location_human = make_human_location(country_code=geo_info["country"],
                                                   city=geo_info["city"])
 
-        if self.my_location is not None:
+        if self.distance is not None:
             my_lat = geo_info["my_lat"]
             my_lng = geo_info["my_lng"]
             self.location_me = make_sexagesimal_location(latitude=my_lat,
@@ -121,13 +121,13 @@ class LocationReport:
         print(formatter.format("  decimal", self.location_decimal))
         print(formatter.format("  sexagesimal", self.location_sexagesimal))
         print(formatter.format("  human", self.location_human))
-        if self.my_location is not None:
+        if self.distance is not None:
             print(f"Distance from device {self.my_location}: {self.distance:.0f} km")
 
     def report_short(self):
         """ Give a one line short location """
         msg = f"Server {self.ip_address} is located at ({self.location_sexagesimal})"
-        if self.my_location is not None:
+        if self.distance is not None :
             distance = int(round(self.distance, 0))
             msg += f"\nDistance from {self.my_location} ({self.location_me}):  {distance}km."
         print(msg)
@@ -138,22 +138,6 @@ class LocationReport:
 # Python scripts/interactive interpreter, e.g. via
 # `from whereami.skeleton import fib`,
 # when using this Python module as a library.
-
-
-def get_response(ipaddress=None):
-    if ipaddress is None:
-        hostname = socket.gethostname()
-        _logger.debug(f"Found local hostname {hostname}")
-        local_ip = socket.gethostbyname(hostname)
-        local_ip = '192.168.1.41'
-        _logger.debug(f"Found local ip {local_ip}")
-        api_request = 'http://freegeoip.net/json/' + local_ip
-    else:
-        api_request = 'http://freegeoip.net/json/' + ipaddress
-    response = requests.get(api_request)
-    if response.status_code != 200:
-        raise requests.exceptions.RequestException("No valid response from api")
-    return response
 
 
 def get_geo_location_device(my_location, reset_cache=False):
@@ -320,7 +304,10 @@ def main(args):
         for key, value in my_device_latlon.items():
             geo_info_ip[key] = value
 
-        geo_info_ip["distance"] = get_distance_to_server(geo_info_ip)
+        try:
+            geo_info_ip["distance"] = get_distance_to_server(geo_info_ip)
+        except TypeError:
+            _logger.warning(f"Failed to calculate distance to {my_device_latlon}")
 
     server = LocationReport(geo_info=geo_info_ip,
                             n_digits_seconds=args.n_digits_seconds)
