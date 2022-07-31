@@ -36,4 +36,5 @@ def test_make_human_location():
     """test location funtions """
 
     assert make_human_location(country_code="NL", city="Amsterdam") == "Amsterdam/Netherlands (NL)"
-    assert make_human_location(country_code="US", city="Mountain View") == "Mountain View/United States (US)"
+    assert make_human_location(country_code="US",
+                               city="Mountain View") == "Mountain View/United States (US)"
