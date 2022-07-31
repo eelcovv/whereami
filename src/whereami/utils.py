@@ -2,18 +2,17 @@ import os
 from pathlib import Path
 import logging
 
-_logger = logging.getLogger(__name__)
 try:
     from latloncalc import latlon as llc
 except ModuleNotFoundError as err:
-    _logger.warning("{err}")
     llc = None
 
 try:
     import country_converter as coco
-except ModuleNotFoundError:
-    _logger.warning("{err}")
+except ModuleNotFoundError as err:
     coco = None
+
+_logger = logging.getLogger(__name__)
 
 
 def deg_to_dms(degrees_decimal: float, n_digits_seconds: int = 1):
@@ -56,10 +55,12 @@ def make_sexagesimal_location(latitude: float, longitude: float, n_digits_second
     if llc is None:
         lat_dms = deg_to_dms(latitude, n_digits_seconds=n_digits_seconds)
         lon_dms = deg_to_dms(longitude, n_digits_seconds=n_digits_seconds)
-        location = f"{lat_dms}, {lon_dms}"
+        latlon = (lat_dms, lon_dms)
     else:
         latlon = llc.LatLon(lat=latitude, lon=longitude)
-        location = latlon.to_string(formatter="d%° %m%′ %S%″ %H", n_digits_seconds=n_digits_seconds)
+        latlon = latlon.to_string(formatter="d%° %m%′ %S%″ %H", n_digits_seconds=n_digits_seconds)
+
+    location = ", ".join(latlon)
 
     return location
 

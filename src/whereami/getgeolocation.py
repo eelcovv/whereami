@@ -44,6 +44,8 @@ class LocationReport:
 
         self.geo_info = geo_info
 
+        self.ip_address = geo_info["ip"]
+
         latitude = float(geo_info["lat"])
         longitude = float(geo_info["lng"])
 
@@ -101,10 +103,11 @@ class LocationReport:
 
     def report_full(self):
         """ Give a full report of the location """
-        formatter = "{:15s} : {}"
-        print(formatter.format("Location (decimal)", self.location_decimal))
-        print(formatter.format("Location (sexagesimal)", self.location_sexagesimal))
-        print(formatter.format("Location (human)", self.location_human))
+        print(f"Location of server {self.ip_address}:")
+        formatter = "{:20} : {}"
+        print(formatter.format("  decimal", self.location_decimal))
+        print(formatter.format("  sexagesimal", self.location_sexagesimal))
+        print(formatter.format("  human", self.location_human))
 
 
 # ---- Python API ----
