@@ -18,7 +18,8 @@ from whereami import __version__
 from whereami.utils import (make_sexagesimal_location,
                             make_decimal_location,
                             make_human_location,
-                            get_cache_file)
+                            get_cache_file,
+                            get_distance_to_server)
 
 __author__ = "eelco"
 __copyright__ = "eelco"
@@ -26,7 +27,7 @@ __license__ = "MIT"
 
 _logger = logging.getLogger(__name__)
 
-OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal", "full"}
+OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal", "full", "short"}
 
 
 class LocationReport:
@@ -48,6 +49,9 @@ class LocationReport:
 
         latitude = float(geo_info["lat"])
         longitude = float(geo_info["lng"])
+
+        self.my_location = geo_info.get("my_location")
+        self.distance = geo_info.get("distance")
 
         self.location_sexagesimal = make_sexagesimal_location(latitude=latitude,
                                                               longitude=longitude,
@@ -82,6 +86,8 @@ class LocationReport:
             self.report_location_raw()
         elif output_format == "full":
             self.report_full()
+        elif output_format == "short":
+            self.report_short()
         else:
             raise ValueError(f"Option {output_format} not recognised")
 
@@ -108,6 +114,16 @@ class LocationReport:
         print(formatter.format("  decimal", self.location_decimal))
         print(formatter.format("  sexagesimal", self.location_sexagesimal))
         print(formatter.format("  human", self.location_human))
+        if self.my_location is not None:
+            print(f"Distance from device {self.my_location}: {self.distance:.0f} km")
+
+    def report_short(self):
+        """ Give a one line short location """
+        msg = f"Server {self.ip_address} is located at ({self.location_sexagesimal})"
+        if self.my_location is not None:
+            distance = int(round(self.distance, 0))
+            msg += f", which is {distance} km away of {self.my_location}"
+        print(msg)
 
 
 # ---- Python API ----
@@ -134,25 +150,40 @@ def get_response(ipaddress=None):
 
 
 def get_geo_location_device(my_location, reset_cache=False):
-    geo_info = geocoder.reverse(my_location)
-    ipaddress = geo_info["ip"]
+    """
+    Get the latitude/longitude from your location given by my_location
 
+    Args:
+        my_location:  str
+            Name of your device location, e.g 'Ottawa, ON'
+        reset_cache: bool
+            Reset the cache
+
+    Returns: tuple
+        Latitude, longitude in decimal representation
+    """
     cache_file = get_cache_file(ipaddress="my_location")
 
     if not cache_file.exists() or reset_cache:
-        if ipaddress is None:
+        if my_location is None:
             geocode = geocoder.ip("me")
+            geo_info = geocode.geojson['features'][0]['properties']
+            latlon = (geo_info["latitude"], geo_info["longitude"])
         else:
-            geocode = geocoder.ip(ipaddress)
-        geo_info = geocode.geojson['features'][0]['properties']
-        with open(cache_file, "w") as stream:
-            json.dump(geo_info, stream, indent=True)
-    else:
-        _logger.debug(f"Reading geo_info from cache {cache_file}")
-        with open(cache_file, "r") as stream:
-            geo_info = json.load(stream)
+            latlon = geocoder.location(my_location)
 
-    return geo_info
+        location = {"my_lat": latlon.lat,
+                    "my_lng": latlon.lng}
+
+        _logger.debug(f"Writing my location to cache {cache_file}")
+        with open(cache_file, "w") as stream:
+            json.dump(location, stream, indent=True)
+    else:
+        _logger.debug(f"Reading my location from cache {cache_file}")
+        with open(cache_file, "r") as stream:
+            location = json.load(stream)
+
+    return location
 
 
 def get_geo_location_ip(ipaddress=None, reset_cache=False):
@@ -167,6 +198,7 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False):
         else:
             geocode = geocoder.ip(ipaddress)
         geo_info = geocode.geojson['features'][0]['properties']
+        _logger.debug(f"Storing geo_info to cache {cache_file}")
         with open(cache_file, "w") as stream:
             json.dump(geo_info, stream, indent=True)
     else:
@@ -214,7 +246,7 @@ def parse_args(args):
              "full: Full report"
              "raw: raw output from api",
         choices=OUTPUT_FORMATS,
-        default="decimal"
+        default="short"
     )
     parser.add_argument(
         "-v",
@@ -246,7 +278,7 @@ def setup_logging(loglevel):
     Args:
       loglevel (int): minimum loglevel for emitting messages
     """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    logformat = "[%(asctime)s] %(levelname)s [%(lineno)4d]:%(name)s:%(message)s"
     logging.basicConfig(
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
@@ -269,11 +301,13 @@ def main(args):
     geo_info_ip = get_geo_location_ip(ipaddress=args.ip_address, reset_cache=args.reset_cache)
 
     if args.my_location is not None:
-        geo_info_device = get_geo_location_device(my_location=args.my_location,
-                                                  reset_cache=args.reset_cache)
-        device = LocationReport(geo_info=geo_info_device,
-                                n_digits_seconds=args.n_digits_seconds)
-        device.make_report()
+        my_device_latlon = get_geo_location_device(my_location=args.my_location,
+                                                   reset_cache=args.reset_cache)
+        geo_info_ip["my_location"] = args.my_location
+        for key, value in my_device_latlon.items():
+            geo_info_ip[key] = value
+
+        geo_info_ip["distance"] = get_distance_to_server(geo_info_ip)
 
     server = LocationReport(geo_info=geo_info_ip,
                             n_digits_seconds=args.n_digits_seconds)

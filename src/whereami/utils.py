@@ -1,4 +1,5 @@
 import os
+import appdirs
 from pathlib import Path
 import logging
 
@@ -127,24 +128,6 @@ def query_yes_no(message):
     return positive
 
 
-def get_config_dir() -> Path:
-    """
-    Get the configuration file for this utility
-
-    Returns:
-        Path object of configuration file
-    """
-    try:
-        home = Path(os.environ.get("HOME"))
-    except TypeError:
-        msg = "Cannot get home directory. Please set your HOME environment variable"
-        raise TypeError(msg)
-
-    config_dir = home / Path(".config") / Path("whereami")
-    config_dir.mkdir(exist_ok=True, parents=True)
-    return config_dir
-
-
 def get_cache_file(ipaddress) -> Path:
     """
     Get the cache file name based on the ip address
@@ -155,9 +138,8 @@ def get_cache_file(ipaddress) -> Path:
 
     """
 
-    config_dir = get_config_dir()
-    cache_dir = config_dir / Path("cache")
-    cache_dir.mkdir(exist_ok=True)
+    cache_dir = Path(appdirs.user_cache_dir("whereami"))
+    cache_dir.mkdir(exist_ok=True, parents=True)
 
     if ipaddress is None:
         suffix = "localhost"
@@ -168,14 +150,10 @@ def get_cache_file(ipaddress) -> Path:
     return cache_file
 
 
-def get_config_file() -> Path:
-    """
-    Get the configuration file for this utility
+def get_distance_to_server(geo_info):
 
-    Returns:
-        Path object of configuration file
-    """
-    config_dir = get_config_dir()
-    config_file = config_dir / Path("whereami.conf")
+    latlon_server = llc.LatLon(lat=geo_info["lat"], lon=geo_info["lng"])
+    latlon_device = llc.LatLon(lat=geo_info["my_lat"], lon=geo_info["my_lng"])
 
-    return config_file
+    return latlon_server.distance(latlon_device)
+
