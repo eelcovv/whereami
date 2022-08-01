@@ -1,5 +1,5 @@
 .. These are examples of badges you might want to add to your README:
-   please update the URLs accordingly
+please update the URLs accordingly
 
     .. image:: https://api.cirrus-ci.com/github/<USER>/whereami.svg?branch=main
         :alt: Built Status
@@ -37,14 +37,67 @@ whereami
     Get the geolocation of the current server
 
 
-This package provides a command line utility to get the geolocation of the current server. You can
-just run::
+This package provides a command line utility to get the geolocation of the current server.
+
+Installation
+============
+
+To install with conda do::
+
+   conda install whereami
+
+To install with pip do::
+
+   pip install whereami
+
+Requirements
+------------
+
+- appdirs
+- country_converter
+- geocoder
+- latloncalc
+
+Usage
+=====
+
+You can simply run on the command line::
 
   whereami
 
-This yields the default output::
+This yields the location of the server you are currently logged into, e.g.::
 
-   >>> Server 27.145.180.230 @ Chon Buri/Thailand (TH) has coordinates (13° 21′ 43.9″ N, 100° 59′ 0.6″ E)
+   >>> Server 37.97.253.1 @ Amsterdam/Netherlands (NL) has coordinates (52° 22′ 26.4″ N, 4° 53′ 22.9″ E)
+
+Other output formats can be picked as well::
+
+   whereami --format sexagesimal
+
+yields::
+
+   >>> 52° 22′ 26.4″ N, 4° 53′ 22.9″ E
+
+Or::
+
+   whereami --format decimal
+
+yields::
+
+   >>> 52.37, 4.89
+
+To get the name of the location in stead of coordinates you can do::
+
+   whereami --format human
+
+which gives::
+
+   >>> Amsterdam/Netherlands (NL)
+
+
+
+
+
+
 
 
 
