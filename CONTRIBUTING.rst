@@ -237,6 +237,32 @@ on PyPI_, the following steps can be used to release a new version for
 #. Run ``tox -e publish -- --repository pypi`` and check that everything was
    uploaded to PyPI_ correctly.
 
+Some remarks 
+============
+
+Here some notes to myself for the publication and testing proceedure  
+
+tox python version checks 
+-------------------------
+* The installation can be checked against varying python version as defined in *tox.ini*
+* You need to install the package *tox-conda* in order to make this to work with conda!  
+* To run the checks, just do  ``tox``.
+
+publication to Pypi
+--------------------
+
+* There is only only requirements.txt under docs. This requirements file is needed by sphinx when you make the documentation with  
+  *tox -e docs*.  This file also contains the *sphinx_rtd_theme*. This package is not needed for installation.
+* To force pip to install the dependencies, add those to the *setup.cfg* file. No versions are rquired
+* Follow the steps above to install to PyPi. Note that the installation to test-pypi cannot install the dependencies! So you can not 
+  install  the test repository in an empty environment, but have to add the dependencies manually. The publication to the real pypi 
+  should resolve all the dependecies. Check this by creating an empty environment with  ``conda create -n test python=3.10`` and install 
+  the package. 
+
+
+
+
+
 
 
 .. [#contrib1] Even though, these resources focus on open source projects and
