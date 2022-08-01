@@ -26,6 +26,10 @@ _logger = logging.getLogger(__name__)
 OUTPUT_FORMATS = {"raw", "human", "decimal", "sexagesimal", "full", "short"}
 
 
+class IpErrorNoLocationFound(Exception):
+    pass
+
+
 class LocationReport:
     """
     Object to report the location of the server
@@ -204,10 +208,10 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
             geocode = geocoder.ip(ipaddress)
         geo_info = geocode.geojson['features'][0]['properties']
         _logger.debug(f"Storing geo_info to cache {cache_file}")
-        if geo_info["status"].startswith("ERROR"):
+        if geo_info["status"] != "OK":
             _logger.warning(f"Failed to get a location for {geo_info['ip']}. "
                             f"Output geocoder is:\n{geo_info}")
-            raise ValueError(f"Failed to get a location for {geo_info['ip']}")
+            raise IpErrorNoLocationFound(f"Failed to get a location for {geo_info['ip']}")
         if write_cache:
             _logger.debug(f"Writing geo_info to cache {cache_file}")
             with open(cache_file, "w") as stream:
