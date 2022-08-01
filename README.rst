@@ -117,13 +117,20 @@ You can also specify the server location in your are not logged into it like::
 
     whereami --ip 8.8.8.8 --my_location Amsterdam,NL
 
-Note the your location does not need to be a server, but can be any address recognised by google.
+Note the your location does not need to be a server (but can be), but can be any address recognised by google.
 In case you specify another server and don't specify your location, by
 default your location is set to the location of your current server. The distance is calculated
 based on this location.
 
+Cache files
+-----------
 
-
+The *whereami* script uses *geocode* to retrieve the coordinates of a location and a server.
+All retrieved information is stored in cache files under *$HOME/.cache/whereami* (for Linux).
+The next time you want to retrieve information on the same server or location, the cache file is
+read instead of making a new query to *geogode*. In case you want to force to reset the cache files
+you can pass the *--reset_cache* option. In case you don't want to use cache files at all, you
+can also pass *--skip_cache* option; this prevent to write any cache files at all.
 
 
 .. _pyscaffold-notes:
