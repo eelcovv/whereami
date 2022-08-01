@@ -115,10 +115,10 @@ based on this location.
 Cache files
 -----------
 
-The *whereisip* script uses *geocode* to retrieve the coordinates of a location and a server.
+The *whereisip* script uses *geocoder* to retrieve the coordinates of a location and a server.
 All retrieved information is stored in cache files under *$HOME/.cache/whereisip* (for Linux).
 The next time you want to retrieve information on the same server or location, the cache file is
-read instead of making a new query to *geogode*. In case you want to force to reset the cache files
+read instead of making a new query to *geocoder*. In case you want to force to reset the cache files
 you can pass the *--reset_cache* option. In case you don't want to use cache files at all, you
 can also pass *--skip_cache* option; this prevent to write any cache files at all.
 
