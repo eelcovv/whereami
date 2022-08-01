@@ -1,8 +1,0 @@
-appdirs
-country_converter
-geocoder
-latloncalc
-pyproj
-pytest
-sphinx-build
-sphinx_rtd_theme

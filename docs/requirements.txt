@@ -4,5 +4,8 @@ geocoder
 latloncalc
 pyproj
 pytest
+importlib_metadata~=4.11.3
+setuptools~=62.3.2
+Sphinx~=5.0.2
 sphinx-build
-sphinx_rtd_theme
+sphinx_rtd_theme~=0.4.3
