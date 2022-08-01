@@ -1,11 +1,9 @@
 name: whereisip
 channels:
-  - defaults
   - conda-forge
 dependencies:
   - python>=3.6
   - pip
-  - numpy
   - pyproj
   - geocoder
   - country_converter
