@@ -6,7 +6,6 @@ dependencies:
   - pip
   - tox
   - pytest
-  - unittest
   - pyproj
   - geocoder
   - country_converter
