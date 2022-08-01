@@ -1,9 +1,5 @@
-appdirs~=1.4.4
-country_converter~=0.7.4
-geocoder~=1.38.1
-importlib_metadata~=4.11.3
-latloncalc~=1.4.7
-pytest~=7.1.2
-requests~=2.27.1
-setuptools~=62.3.2
-Sphinx~=5.0.2
+appdirs
+country_converter
+geocoder
+latloncalc
+pyproj
