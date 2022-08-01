@@ -1,0 +1,15 @@
+name: whereisip
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python>=3.6
+  - pip
+  - numpy
+  - pip:
+      - -e .  # install git checkout of demo-dsproject in editable mode
+      - pyproj
+      - latloncalc
+      - geocoder
+      - country_converter
+      - appdirs
