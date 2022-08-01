@@ -1,8 +1,7 @@
-import pytest
-
 import unittest
-from whereami.getgeolocation import (get_geo_location_ip)
+
 from whereami.getgeolocation import IpErrorNoLocationFound
+from whereami.getgeolocation import (get_geo_location_ip)
 
 __author__ = "Eelco van Vliet"
 __copyright__ = "Eelco van Vliet"
