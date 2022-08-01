@@ -1,7 +1,7 @@
 import pytest
 
-from whereami.utils import (deg_to_dms, get_distance_to_server, get_cache_file,
-                            make_human_location, make_decimal_location, make_sexagesimal_location)
+from whereisip.utils import (deg_to_dms, get_distance_to_server, get_cache_file,
+                             make_human_location, make_decimal_location, make_sexagesimal_location)
 
 __author__ = "eelco"
 __copyright__ = "eelco"

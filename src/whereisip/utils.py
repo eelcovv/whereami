@@ -1,5 +1,5 @@
 """
-module with utilities used by whereami
+module with utilities used by whereisip
 """
 import logging
 from pathlib import Path
@@ -140,7 +140,7 @@ def get_cache_file(ipaddress, write_cache=True) -> Path:
 
     """
 
-    cache_dir = Path(appdirs.user_cache_dir("whereami"))
+    cache_dir = Path(appdirs.user_cache_dir("whereisip"))
 
     if write_cache:
         cache_dir.mkdir(exist_ok=True, parents=True)

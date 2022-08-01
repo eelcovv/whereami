@@ -1,6 +1,6 @@
 import pytest
 
-from whereami.getgeolocation import (main)
+from whereisip.getgeolocation import (main)
 
 __author__ = "eelco"
 __copyright__ = "eelco"

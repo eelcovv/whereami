@@ -1,5 +1,5 @@
 """
-    Setup file for whereami.
+    Setup file for whereisip.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 4.2.1.

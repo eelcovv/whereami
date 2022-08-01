@@ -10,13 +10,13 @@ import sys
 
 import geocoder
 
-from whereami import __version__
-from whereami.utils import (make_sexagesimal_location,
-                            make_decimal_location,
-                            make_human_location,
-                            get_cache_file,
-                            get_distance_to_server,
-                            geoinfo2location)
+from whereisip import __version__
+from whereisip.utils import (make_sexagesimal_location,
+                             make_decimal_location,
+                             make_human_location,
+                             get_cache_file,
+                             get_distance_to_server,
+                             geoinfo2location)
 
 __author__ = "Eelco van Vliet"
 __copyright__ = "Eelco van Vliet"
@@ -137,7 +137,7 @@ class LocationReport:
 # ---- Python API ----
 # The functions defined in this section can be imported by users in their
 # Python scripts/interactive interpreter, e.g. via
-# `from whereami.skeleton import fib`,
+# `from whereisip.skeleton import fib`,
 # when using this Python module as a library.
 
 
@@ -280,7 +280,7 @@ def parse_args(args):
     parser.add_argument(
         "--version",
         action="version",
-        version="whereami {ver}".format(ver=__version__),
+        version="whereisip {ver}".format(ver=__version__),
     )
     parser.add_argument(
         "-f",
@@ -396,6 +396,6 @@ if __name__ == "__main__":
     # After installing your project with pip, users can also run your Python
     # modules as scripts via the ``-m`` flag, as defined in PEP 338::
     #
-    #     python -m whereami.skeleton 42
+    #     python -m whereisip.skeleton 42
     #
     run()
