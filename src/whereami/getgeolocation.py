@@ -156,9 +156,13 @@ def get_geo_location_device(my_location, reset_cache=False, write_cache=True):
     Returns: tuple
         Latitude, longitude in decimal representation
     """
-    cache_file = get_cache_file(ipaddress="my_location", write_cache=write_cache)
+    if my_location is None:
+        cache_suffix = "me"
+    else:
+        cache_suffix = my_location
+    cache_file = get_cache_file(ipaddress=cache_suffix, write_cache=write_cache)
 
-    if not cache_file.exists() or reset_cache or my_location is not None:
+    if not cache_file.exists() or reset_cache:
         if my_location is None:
             geocode = geocoder.ip("me")
             geo_info = geocode.geojson['features'][0]['properties']
