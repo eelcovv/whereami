@@ -159,8 +159,6 @@ Submit your contribution
 #. Go to the web page of your fork and click |contribute button|
    to send your changes for review.
 
-   .. todo:: if you are using GitHub, you can uncomment the following paragraph
-
       Find more detailed information in `creating a PR`_. You might also want to open
       the PR as a draft first and mark it as ready for review after the feedbacks
       from the continuous integration (CI) system or any required fixes.
@@ -255,7 +253,7 @@ on PyPI_, the following steps can be used to release a new version for
 .. _repository: https://github.com/eelcovv/whereami
 .. _issue tracker: https://github.com/eelcovv/whereami/issues
 .. _geocoder: https://geocoder.readthedocs.io
-.. _latloncalc:: https://github.com/eelcovv/latloncalc
+.. _latloncalc: https://github.com/eelcovv/latloncalc
 .. <-- end -->
 
 

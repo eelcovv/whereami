@@ -127,6 +127,7 @@ def query_yes_no(message):
 def get_cache_file(ipaddress, write_cache=True) -> Path:
     """
     Get the cache file name based on the ip address
+
     Args:
         ipaddress: str
             Ip address of the cache file
@@ -134,6 +135,8 @@ def get_cache_file(ipaddress, write_cache=True) -> Path:
             Write the cache file
 
     Returns:
+
+        Path object of cache file name
 
     """
 
@@ -152,6 +155,18 @@ def get_cache_file(ipaddress, write_cache=True) -> Path:
 
 
 def get_distance_to_server(geo_info):
+    """
+    Get the coordinates from the two locations stored in geo_info and calculate the distance
+
+    Args:
+        geo_info:  dict
+            Dictionary with the locations stored
+
+    Returns:
+        The distance in km between the two locations
+
+    """
+
     latlon_server = llc.LatLon(lat=geo_info["lat"], lon=geo_info["lng"])
     latlon_device = llc.LatLon(lat=geo_info["my_lat"], lon=geo_info["my_lng"])
 
@@ -161,6 +176,7 @@ def get_distance_to_server(geo_info):
 def geoinfo2location(geo_info) -> dict:
     """
     Extract the relevant location information from the geo_info dictionary
+
     Args:
         geo_info: dict
             geographics information returnned by geocode
