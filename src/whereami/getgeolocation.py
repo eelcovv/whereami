@@ -214,12 +214,12 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
             geocode = geocoder.ip("me")
         else:
             geocode = geocoder.ip(ipaddress)
-
         if not geocode.ok:
-            _logger.warning(f"Failed to get a location for {ipaddress}. "
-                            f"Output geocoder is:\n{geocode}")
             raise IpErrorNoLocationFound(f"Failed to get a location for IP address {ipaddress}")
+
         geo_info = geocode.geojson['features'][0]['properties']
+        if geo_info["status"] != "OK":
+            raise IpErrorNoLocationFound(f"Failed to get a location for IP address {ipaddress}")
         _logger.debug(f"Storing geo_info to cache {cache_file}")
         if write_cache:
             _logger.debug(f"Writing geo_info to cache {cache_file}")

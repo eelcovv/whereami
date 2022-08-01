@@ -10,7 +10,7 @@ __license__ = "MIT"
 
 
 class TestGetGeoLocation(unittest.TestCase):
-    geo_info = get_geo_location_ip("8.8.8.8", write_cache=False)
+    geo_info = get_geo_location_ip("8.8.8.8", write_cache=False, reset_cache=True)
     expected = {'address': 'Mountain View, California, US',
                 'city': 'Mountain View',
                 'country': 'US',
@@ -43,4 +43,4 @@ class TestGetGeoLocation(unittest.TestCase):
 class TestGetGeoLocationException(unittest.TestCase):
     def test_geo_location_exception(self):
         with self.assertRaises(IpErrorNoLocationFound):
-            geo_info = get_geo_location_ip("10.2.30.11", write_cache=False)
+            geo_info = get_geo_location_ip("10.2.30.11", write_cache=False, reset_cache=True)
