@@ -15,7 +15,8 @@ from whereami.utils import (make_sexagesimal_location,
                             make_decimal_location,
                             make_human_location,
                             get_cache_file,
-                            get_distance_to_server)
+                            get_distance_to_server,
+                            geoinfo2location)
 
 __author__ = "Eelco van Vliet"
 __copyright__ = "Eelco van Vliet"
@@ -162,17 +163,20 @@ def get_geo_location_device(my_location, reset_cache=False, write_cache=True):
             geocode = geocoder.ip("me")
             geo_info = geocode.geojson['features'][0]['properties']
 
-            location_human = make_human_location(country_code=geo_info["country"],
-                                                 city=geo_info["city"])
-            location = {"my_location": location_human,
-                        "my_lat": geo_info["lat"],
-                        "my_lng": geo_info["lng"]}
+            location = geoinfo2location(geo_info)
         else:
-            latlon = geocoder.location(my_location)
-            location = {
-                "my_location": my_location,
-                "my_lat": latlon.lat,
-                "my_lng": latlon.lng}
+            try:
+                latlon = geocoder.location(my_location)
+            except ValueError:
+                _logger.debug(f"{my_location} failed. Try if it is an ip")
+                geocode = geocoder.ip(my_location)
+                geo_info = geocode.geojson['features'][0]['properties']
+                location = geoinfo2location(geo_info)
+            else:
+                location = {
+                    "my_location": my_location,
+                    "my_lat": latlon.lat,
+                    "my_lng": latlon.lng}
 
         _logger.debug(f"Writing my location to cache {cache_file}")
         if write_cache:

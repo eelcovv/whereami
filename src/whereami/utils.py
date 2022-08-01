@@ -163,3 +163,21 @@ def get_distance_to_server(geo_info):
     latlon_device = llc.LatLon(lat=geo_info["my_lat"], lon=geo_info["my_lng"])
 
     return latlon_server.distance(latlon_device)
+
+
+def geoinfo2location(geo_info) -> dict:
+    """
+    Extract the relevant location information from the geo_info dictionary
+    Args:
+        geo_info: dict
+            geographics information returnned by geocode
+
+    Returns: dict
+        dictionary with relevant location information
+    """
+    location_human = make_human_location(country_code=geo_info["country"],
+                                         city=geo_info["city"])
+    location = {"my_location": location_human,
+                "my_lat": geo_info["lat"],
+                "my_lng": geo_info["lng"]}
+    return location
