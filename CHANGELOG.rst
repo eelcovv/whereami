@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 1.0.9
+Version 1.1.0
 =============
 
 - First release version of *whereisip*
