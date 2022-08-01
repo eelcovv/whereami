@@ -214,12 +214,13 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
             geocode = geocoder.ip("me")
         else:
             geocode = geocoder.ip(ipaddress)
+
+        if not geocode.ok:
+            _logger.warning(f"Failed to get a location for {ipaddress}. "
+                            f"Output geocoder is:\n{geocode}")
+            raise IpErrorNoLocationFound(f"Failed to get a location for IP address {ipaddress}")
         geo_info = geocode.geojson['features'][0]['properties']
         _logger.debug(f"Storing geo_info to cache {cache_file}")
-        if geo_info["status"] != "OK":
-            _logger.warning(f"Failed to get a location for {geo_info['ip']}. "
-                            f"Output geocoder is:\n{geo_info}")
-            raise IpErrorNoLocationFound(f"Failed to get a location for {geo_info['ip']}")
         if write_cache:
             _logger.debug(f"Writing geo_info to cache {cache_file}")
             with open(cache_file, "w") as stream:
@@ -232,6 +233,15 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
     return geo_info
 
 
+class SmartFormatter(argparse.ArgumentDefaultsHelpFormatter):
+
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()
+        # this is the RawTextHelpFormatter._split_lines
+        return argparse.HelpFormatter._split_lines(self, text, width)
+
+
 def parse_args(args):
     """Parse command line parameters
 
@@ -242,16 +252,22 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description="Get the location of your ip address")
+    parser = argparse.ArgumentParser(
+        description="Get the location of your server (or any other server) and calculate the "
+                    "distance to your own location",
+        formatter_class=SmartFormatter)
     parser.add_argument(
         "--reset_cache",
         action="store_true",
-        default=False
+        default=False,
+        help="Reset the cache files located in the .cache directory. Without reset, the information"
+             "is read from a cache file instead of making a new request to geocoder. "
+             "Each IP address of location gets its own cache file."
     )
     parser.add_argument(
         "--skip_cache",
         action="store_true",
-        help="Do not read of write to the cache file",
+        help="Do not read of write to the cache files",
         default=False,
     )
     parser.add_argument("--n_digits_seconds", type=int, default=1,
@@ -269,12 +285,14 @@ def parse_args(args):
     parser.add_argument(
         "-f",
         "--format",
-        help="Format of the output. Choices are: "
-             "decimal: Decimal latitude/longitude (default), "
-             "sexagesimal: Sexagesimal latitude/longitude,  "
-             "human: Human location City/Country,"
-             "full: Full report"
-             "raw: raw output from api",
+        help="R|Format of the output. Choices are:\n"
+             ""
+             " - decimal    : Decimal latitude/longitude (default)\n"
+             " - sexagesimal: Sexagesimal latitude/longitude\n"
+             " - human      : Human location City/Country\n"
+             " - full       : Full report with all location notations\n"
+             " - short      : A compact report with a sexagesimal and human nation + distance\n"
+             " - raw        : raw output from api\n",
         choices=OUTPUT_FORMATS,
         default="short"
     )
@@ -296,8 +314,13 @@ def parse_args(args):
     )
     parser.add_argument(
         "--my_location",
+        metavar="<Location or IP>",
         help="Define the location of your device which is used to calculate the distance to "
-             "the server",
+             "the server. "
+             "A location can be a 'cite,country' combination (or any other address recognised by"
+             " Google) or an IP address. "
+             "In case no location is given and the *ip_address* option is used to specify an other"
+             "server than your local server, my location is set to you local server's IP address"
     )
     return parser.parse_args(args)
 
