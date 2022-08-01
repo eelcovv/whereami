@@ -103,7 +103,7 @@ More examples
 -------------
 
 This utility can be used to determine the distance of your server to your current location.
-For instances, if your are located in Amsterdam, NL and your are logged in onto the google server,
+For instance, if your are located in Amsterdam, NL and your are logged in onto the google server,
 you can do::
 
     whereami  --my_location Amsterdam,NL
