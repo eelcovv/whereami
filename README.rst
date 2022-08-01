@@ -61,6 +61,9 @@ Requirements
 Usage
 =====
 
+Varying output format
+---------------------
+
 You can simply run on the command line::
 
   whereami
@@ -93,10 +96,31 @@ which gives::
 
    >>> Amsterdam/Netherlands (NL)
 
+Note that you can copy-paste the sexagesimal representation  *52° 22′ 26.4″ N, 4° 53′ 22.9″ E* into
+google maps in order to show your location on the map.
 
+Distance from your location
+---------------------------
 
+This utility can be used to determine the distance of your server to your current location.
+For instances, if your are located in Amsterdam, NL and your are logged in onto the google server,
+you can do::
 
+    whereami  --my_location Amsterdam,NL
 
+Now, next to the location of your sever, also the distance to your location is given::
+
+    Server 8.8.8.8 @ Mountain View/United States (US) has coordinates (37° 24′ 20.2″ N, 122° 4′ 39.0″ W)
+    Distance from Amsterdam,NL (52° 22′ 21.9″ N, 4° 53′ 37.0″ E):  8816km.
+
+You can also specify the server location in your are not logged into it like::
+
+    whereami --ip 8.8.8.8 --my_location Amsterdam,NL
+
+Note the your location does not need to be a server, but can be any address recognised by google.
+In case you specify another server and don't specify your location, by
+default your location is set to the location of your current server. The distance is calculated
+based on this location.
 
 
 
