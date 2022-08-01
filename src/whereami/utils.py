@@ -6,15 +6,8 @@ from pathlib import Path
 
 import appdirs
 
-try:
-    from latloncalc import latlon as llc
-except ModuleNotFoundError as err:
-    llc = None
-
-try:
-    import country_converter as coco
-except ModuleNotFoundError as err:
-    coco = None
+from latloncalc import latlon as llc
+import country_converter as coco
 
 _logger = logging.getLogger(__name__)
 
