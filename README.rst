@@ -1,18 +1,18 @@
 .. These are examples of badges you might want to add to your README:
-please update the URLs accordingly
+   please update the URLs accordingly
 
-.. image:: https://readthedocs.org/projects/whereami/badge/?version=latest
-    :alt: ReadTheDocs
-    :target: https://whereami.readthedocs.io/en/stable/
-.. image:: https://img.shields.io/pypi/v/whereami.svg
-    :alt: PyPI-Server
-    :target: https://pypi.org/project/whereami/
-.. image:: https://img.shields.io/conda/vn/conda-forge/whereami.svg
-    :alt: Conda-Forge
-    :target: https://anaconda.org/conda-forge/whereami
-.. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
-    :alt: Project generated with PyScaffold
-    :target: https://pyscaffold.org/
+    .. image:: https://readthedocs.org/projects/whereami/badge/?version=latest
+        :alt: ReadTheDocs
+        :target: https://whereami.readthedocs.io/en/stable/
+    .. image:: https://img.shields:2.io/pypi/v/whereami.svg
+        :alt: PyPI-Server
+        :target: https://pypi.org/project/whereami/
+    .. image:: https://img.shields.io/conda/vn/conda-forge/whereami.svg
+        :alt: Conda-Forge
+        :target: https://anaconda.org/conda-forge/whereami
+    .. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
+        :alt: Project generated with PyScaffold
+        :target: https://pyscaffold.org/
 
 ========
 whereami
