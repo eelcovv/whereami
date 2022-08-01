@@ -99,8 +99,8 @@ which gives::
 Note that you can copy-paste the sexagesimal representation  *52° 22′ 26.4″ N, 4° 53′ 22.9″ E* into
 google maps in order to show your location on the map.
 
-Distance from your location
----------------------------
+More examples
+-------------
 
 This utility can be used to determine the distance of your server to your current location.
 For instances, if your are located in Amsterdam, NL and your are logged in onto the google server,
@@ -131,6 +131,65 @@ The next time you want to retrieve information on the same server or location, t
 read instead of making a new query to *geogode*. In case you want to force to reset the cache files
 you can pass the *--reset_cache* option. In case you don't want to use cache files at all, you
 can also pass *--skip_cache* option; this prevent to write any cache files at all.
+
+Get Help
+--------
+
+The help information can be shown with::
+
+    whereami --help
+
+which gives the full help::
+
+    usage: whereami [-h] [--reset_cache] [--skip_cache]
+                    [--n_digits_seconds N_DIGITS_SECONDS]
+                    [--ip_address IP_ADDRESS] [--version]
+                    [-f {sexagesimal,decimal,human,raw,full,short}] [-v] [-vv]
+                    [--my_location <Location or IP>]
+
+    Get the location of your server (or any other server) and calculate the
+    distance to your own location
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --reset_cache         Reset the cache files located in the .cache directory.
+                            Without reset, the informationis read from a cache
+                            file instead of making a new request to geocoder. Each
+                            IP address of location gets its own cache file.
+                            (default: False)
+      --skip_cache          Do not read of write to the cache files (default:
+                            False)
+      --n_digits_seconds N_DIGITS_SECONDS
+                            Number of digits to use for the seconds notation. If a
+                            decimal notation is used, the number of decimals will
+                            be n_digit_seconds + 1 (default: 1)
+      --ip_address IP_ADDRESS
+                            The ip address to get the geo location from. If not
+                            given, the local machine is used (default: None)
+      --version             show program's version number and exit
+      -f {sexagesimal,decimal,human,raw,full,short}, --format {sexagesimal,decimal,human,raw,full,short}
+                            Format of the output. Choices are:
+                             - decimal    : Decimal latitude/longitude (default)
+                             - sexagesimal: Sexagesimal latitude/longitude
+                             - human      : Human location City/Country
+                             - full       : Full report with all location notations
+                             - short      : A compact report with a sexagesimal and human nation + distance
+                             - raw        : raw output from api
+                             (default: short)
+      -v, --verbose         set loglevel to INFO (default: None)
+      -vv, --debug          set loglevel to DEBUG (default: None)
+      --my_location <Location or IP>
+                            Define the location of your device which is used to
+                            calculate the distance to the server. A location can
+                            be a 'cite,country' combination (or any other address
+                            recognised by Google) or an IP address. In case no
+                            location is given and the *ip_address* option is used
+                            to specify an otherserver than your local server, my
+                            location is set to you local server's IP address
+                            (default: None)
+
+
+
 
 
 .. _pyscaffold-notes:
