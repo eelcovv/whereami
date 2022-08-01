@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.1.1
-===========
+Version 1.0.2
+=============
 
-- First version based on geocoder and latloncal
+- First release version of *whereami*
