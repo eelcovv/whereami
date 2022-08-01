@@ -6,10 +6,10 @@ dependencies:
   - python>=3.6
   - pip
   - numpy
+  - pyproj
+  - geocoder
+  - country_converter
+  - appdirs
   - pip:
       - -e .  # install git checkout of demo-dsproject in editable mode
-      - pyproj
       - latloncalc
-      - geocoder
-      - country_converter
-      - appdirs
