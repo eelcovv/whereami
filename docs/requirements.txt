@@ -5,5 +5,8 @@ latloncalc
 pyproj
 unittest
 pytest
+setuptools
+importlib_metadata
+Sphinx
 sphinx-build
 sphinx_rtd_theme
