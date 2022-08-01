@@ -1,21 +1,21 @@
 .. These are examples of badges you might want to add to your README:
    please update the URLs accordingly
 
-    .. image:: https://readthedocs.org/projects/whereami/badge/?version=latest
+    .. image:: https://readthedocs.org/projects/whereisip/badge/?version=latest
         :alt: ReadTheDocs
-        :target: https://whereami.readthedocs.io/en/stable/
-    .. image:: https://img.shields:2.io/pypi/v/whereami.svg
+        :target: https://whereisip.readthedocs.io/en/stable/
+    .. image:: https://img.shields:2.io/pypi/v/whereisip.svg
         :alt: PyPI-Server
-        :target: https://pypi.org/project/whereami/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/whereami.svg
+        :target: https://pypi.org/project/whereisip/
+    .. image:: https://img.shields.io/conda/vn/conda-forge/whereisip.svg
         :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/whereami
+        :target: https://anaconda.org/conda-forge/whereisip
     .. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
         :alt: Project generated with PyScaffold
         :target: https://pyscaffold.org/
 
 ========
-whereami
+whereisip
 ========
 
 
@@ -29,11 +29,11 @@ Installation
 
 To install with conda do::
 
-   conda install whereami
+   conda install whereisip
 
 To install with pip do::
 
-   pip install whereami
+   pip install whereisip
 
 Requirements
 ------------
@@ -56,7 +56,7 @@ Varying output format
 
 You can simply run on the command line::
 
-  whereami
+  whereisip
 
 This yields the location of the server you are currently logged into, e.g.::
 
@@ -64,7 +64,7 @@ This yields the location of the server you are currently logged into, e.g.::
 
 Other output formats can be picked as well. If you only want the geo coordinates of the location of your server you can do::
 
-   whereami --format sexagesimal
+   whereisip --format sexagesimal
 
 which yields::
 
@@ -72,7 +72,7 @@ which yields::
 
 Or if you prefer to have a decimal representation of your server's location you can do::
 
-   whereami --format decimal
+   whereisip --format decimal
 
 resulting in::
 
@@ -80,7 +80,7 @@ resulting in::
 
 To get the name of the location in stead of coordinates you can do::
 
-   whereami --format human
+   whereisip --format human
 
 which gives::
 
@@ -96,7 +96,7 @@ This utility can be used to determine the distance of your server to your curren
 For instance, if your are located in Amsterdam, NL and your are logged in onto the google server,
 you can do::
 
-    whereami  --my_location Amsterdam,NL
+    whereisip  --my_location Amsterdam,NL
 
 Now, next to the location of your sever, also the distance to your location is given::
 
@@ -105,7 +105,7 @@ Now, next to the location of your sever, also the distance to your location is g
 
 You can also specify the server location in your are not logged into it like::
 
-    whereami --ip 8.8.8.8 --my_location Amsterdam,NL
+    whereisip --ip 8.8.8.8 --my_location Amsterdam,NL
 
 Note the your location does not need to be a server (but can be), but can be any address recognised by google.
 In case you specify another server and don't specify your location, by
@@ -115,8 +115,8 @@ based on this location.
 Cache files
 -----------
 
-The *whereami* script uses *geocode* to retrieve the coordinates of a location and a server.
-All retrieved information is stored in cache files under *$HOME/.cache/whereami* (for Linux).
+The *whereisip* script uses *geocode* to retrieve the coordinates of a location and a server.
+All retrieved information is stored in cache files under *$HOME/.cache/whereisip* (for Linux).
 The next time you want to retrieve information on the same server or location, the cache file is
 read instead of making a new query to *geogode*. In case you want to force to reset the cache files
 you can pass the *--reset_cache* option. In case you don't want to use cache files at all, you
@@ -127,15 +127,15 @@ Get Help
 
 The help information can be shown with::
 
-    whereami --help
+    whereisip --help
 
 which gives the full help::
 
-    usage: whereami [-h] [--reset_cache] [--skip_cache]
-                    [--n_digits_seconds N_DIGITS_SECONDS]
-                    [--ip_address IP_ADDRESS] [--version]
-                    [-f {sexagesimal,decimal,human,raw,full,short}] [-v] [-vv]
-                    [--my_location <Location or IP>]
+    usage: whereisip [-h] [--reset_cache] [--skip_cache]
+                     [--n_digits_seconds N_DIGITS_SECONDS]
+                     [--ip_address IP_ADDRESS] [--version]
+                     [-f {sexagesimal,decimal,human,raw,full,short}] [-v] [-vv]
+                     [--my_location <Location or IP>]
 
     Get the location of your server (or any other server) and calculate the
     distance to your own location

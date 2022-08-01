@@ -5,4 +5,4 @@ Changelog
 Version 1.0.7
 =============
 
-- First release version of *whereami*
+- First release version of *whereisip*
