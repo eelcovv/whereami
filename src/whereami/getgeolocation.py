@@ -1,18 +1,14 @@
 """
-This script get the location of the current server
+This script gets the location of the current server
 """
 
 import argparse
 import json
 import logging
-import os
 import pprint
 import sys
-import geocoder
-import socket
-from pathlib import Path
 
-import requests
+import geocoder
 
 from whereami import __version__
 from whereami.utils import (make_sexagesimal_location,
@@ -21,8 +17,8 @@ from whereami.utils import (make_sexagesimal_location,
                             get_cache_file,
                             get_distance_to_server)
 
-__author__ = "eelco"
-__copyright__ = "eelco"
+__author__ = "Eelco van Vliet"
+__copyright__ = "Eelco van Vliet"
 __license__ = "MIT"
 
 _logger = logging.getLogger(__name__)
@@ -208,7 +204,12 @@ def get_geo_location_ip(ipaddress=None, reset_cache=False, write_cache=True):
             geocode = geocoder.ip(ipaddress)
         geo_info = geocode.geojson['features'][0]['properties']
         _logger.debug(f"Storing geo_info to cache {cache_file}")
+        if geo_info["status"].startswith("ERROR"):
+            _logger.warning(f"Failed to get a location for {geo_info['ip']}. "
+                            f"Output geocoder is:\n{geo_info}")
+            raise ValueError(f"Failed to get a location for {geo_info['ip']}")
         if write_cache:
+            _logger.debug(f"Writing geo_info to cache {cache_file}")
             with open(cache_file, "w") as stream:
                 json.dump(geo_info, stream, indent=True)
     else:

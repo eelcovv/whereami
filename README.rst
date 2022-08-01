@@ -34,10 +34,19 @@ whereami
 ========
 
 
-    Add a short description here!
+    Get the geolocation of the current server
 
 
-A longer description of your project goes here...
+This package provides a command line utility to get the geolocation of the current server. You can
+just run::
+
+  whereami
+
+This yields the default output::
+
+   >>> Server 27.145.180.230 @ Chon Buri/Thailand (TH) has coordinates (13° 21′ 43.9″ N, 100° 59′ 0.6″ E)
+
+
 
 
 .. _pyscaffold-notes:

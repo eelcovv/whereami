@@ -1,7 +1,10 @@
-import os
-import appdirs
-from pathlib import Path
+"""
+module with utilities used by whereami
+"""
 import logging
+from pathlib import Path
+
+import appdirs
 
 try:
     from latloncalc import latlon as llc
