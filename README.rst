@@ -53,10 +53,15 @@ To install with pip do::
 Requirements
 ------------
 
+- Python 3.6+
 - appdirs
 - country_converter
 - geocoder
 - latloncalc
+
+Python version
+--------------
+Tested for Python 3.6, 3.7, 3.8, 3.9, 3.10
 
 Usage
 =====
