@@ -69,19 +69,19 @@ This yields the location of the server you are currently logged into, e.g.::
 
    >>> Server 37.97.253.1 @ Amsterdam/Netherlands (NL) has coordinates (52° 22′ 26.4″ N, 4° 53′ 22.9″ E)
 
-Other output formats can be picked as well::
+Other output formats can be picked as well. If you only want the geo coordinates of the location of your server you can do::
 
    whereami --format sexagesimal
 
-yields::
+which yields::
 
    >>> 52° 22′ 26.4″ N, 4° 53′ 22.9″ E
 
-Or::
+Or if you prefer to have a decimal representation of your server's location you can do::
 
    whereami --format decimal
 
-yields::
+resulting in::
 
    >>> 52.37, 4.89
 
