@@ -3,7 +3,6 @@ country_converter
 geocoder
 latloncalc
 pyproj
-unittest
 pytest
 setuptools
 importlib_metadata
